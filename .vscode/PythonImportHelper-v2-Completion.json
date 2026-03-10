@@ -1,0 +1,29 @@
+[
+    {
+        "label": "os",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "os",
+        "description": "os",
+        "detail": "os",
+        "documentation": {}
+    },
+    {
+        "label": "\"go_quant_system/pkg/model\"",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "\"go_quant_system.pkg.model\"",
+        "description": "\"go_quant_system.pkg.model\"",
+        "detail": "\"go_quant_system.pkg.model\"",
+        "documentation": {}
+    },
+    {
+        "label": "create_project",
+        "kind": 2,
+        "importPath": "setup",
+        "description": "setup",
+        "peekOfCode": "def create_project():\n    project_name = \"go_quant_system\"\n    # 1. 定义需要创建的所有目录（按周期拆分）\n    directories = [\n        # cmd 入口\n        \"cmd/data_collector\",\n        \"cmd/indicator_calculator\",\n        \"cmd/risk_monitor\",\n        \"cmd/strategy_executor\",\n        # pkg 基础库",
+        "detail": "setup",
+        "documentation": {}
+    }
+]

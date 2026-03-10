@@ -1,0 +1,5 @@
+strategy:
+  name: "pin_1m"
+  threshold: 0.03
+  leverage: 1
+  scaling_steps: [1, 1, 1, 1, 1]

@@ -1,0 +1,94 @@
+.
+├── cmd/                      # 程序入口（按“服务+周期”拆分可执行文件，高性能部署）
+│   ├── data_collector/       # 行情采集服务（主入口）
+│   │   ├── main.go           # 采集服务启动器（可配置启动指定周期）
+│   │   ├── collector_1m.go   # 1分钟K线/行情采集逻辑
+│   │   ├── collector_1h.go   # 1小时K线/行情采集逻辑
+│   │   └── collector_1d.go   # 1天K线/行情采集逻辑
+│   ├── indicator_calculator/ # 指标计算服务（主入口）
+│   │   ├── main.go           # 计算服务启动器
+│   │   ├── calculator_1m.go  # 1分钟指标计算（EMA/MACD/极值等）
+│   │   ├── calculator_1h.go  # 1小时指标计算
+│   │   └── calculator_1d.go  # 1天指标计算
+│   ├── risk_monitor/         # 风控监控服务（跨周期，无需拆分）
+│   │   └── main.go
+│   └── strategy_executor/    # 策略执行服务（按周期+策略拆分）
+│       ├── main.go           # 策略启动器
+│       ├── pin_1m.go         # 1分钟插针策略
+│       ├── pin_1h.go         # 1小时插针策略
+│       ├── trend_1d.go       # 1天趋势策略
+│       └── trend_1h.go       # 1小时趋势策略
+├── pkg/                      # 公共库（跨周期，不拆分）
+│   ├── client/               # 交易所客户端（支持多周期行情订阅）
+│   │   ├── binance/
+│   │   │   ├── rest/         # 多周期K线查询（1m/1h/1d通用）
+│   │   │   └── ws/           # 多周期实时行情订阅
+│   │   └── redis/            # Redis客户端（按周期存储数据，如key: kline:1m:BTCUSDT）
+│   ├── config/               # 配置（多周期参数统一管理，如1m窗口60，1h窗口24）
+│   ├── logger/               # 日志（按周期输出，如logs/indicator/1m/all.log）
+│   ├── model/                # 数据模型（K线模型兼容多周期，新增Cycle字段）
+│   │   ├── kline.go          # type KLine struct { Cycle string; ... }
+│   │   └── indicator.go      # 指标模型兼容多周期
+│   └── utils/                # 通用工具（跨周期时间转换、数据处理）
+├── internal/                 # 内部业务逻辑（按“功能+周期”拆分）
+│   ├── datasource/           # 数据源处理（按周期拆分）
+│   │   ├── kline_1m/
+│   │   │   ├── collector.go  # 1m K线采集核心逻辑
+│   │   │   └── parser.go     # 1m K线数据解析
+│   │   ├── kline_1h/
+│   │   │   ├── collector.go
+│   │   │   └── parser.go
+│   │   └── kline_1d/
+│   │       ├── collector.go
+│   │       └── parser.go
+│   ├── dataprocess/          # 指标计算（按周期拆分）
+│   │   ├── indicator_1m/
+│   │   │   ├── ema.go        # 1m EMA计算
+│   │   │   ├── macd.go       # 1m MACD计算
+│   │   │   └── extreme.go    # 1m 价格极值判断（核心需求）
+│   │   ├── indicator_1h/
+│   │   │   ├── ema.go
+│   │   │   ├── macd.go
+│   │   │   └── extreme.go
+│   │   └── indicator_1d/
+│   │       ├── ema.go
+│   │       ├── macd.go
+│   │       └── extreme.go
+│   ├── risk/                 # 风控（跨周期，按规则适配周期参数）
+│   │   ├── risk_engine.go    # 风控引擎（可接收周期参数）
+│   │   ├── pnl_1m.go         # 1m PNL计算
+│   │   └── pnl_1d.go         # 1d PNL计算
+│   └── strategy/             # 策略（按“周期+策略类型”拆分）
+│       ├── pin/              # 插针策略（核心需求）
+│       │   ├── pin_1m.go     # 1分钟插针策略逻辑
+│       │   └── pin_1h.go     # 1小时插针策略逻辑
+│       └── trend/            # 趋势策略
+│           ├── trend_1h.go   # 1小时趋势策略
+│           └── trend_1d.go   # 1天趋势策略
+├── configs/                  # 配置文件（按周期拆分配置）
+│   ├── collector_1m.yaml     # 1m采集配置（WebSocket地址、频率）
+│   ├── collector_1h.yaml     # 1h采集配置
+│   ├── indicator_1m.yaml     # 1m指标参数（窗口大小、极值阈值）
+│   └── strategy_1m.yaml      # 1m策略参数（15%波动阈值）
+├── scripts/                  # 自动化脚本（适配新目录）
+│   └── setup.sh              # 一键生成含周期的目录
+├── test/                     # 测试（按周期拆分）
+│   ├── unit/
+│   │   ├── indicator_1m/
+│   │   │   └── test_extreme.go  # 1m极值判断单元测试
+│   │   └── indicator_1h/
+│   └── integration/
+│       └── test_strategy_1m.go  # 1m策略集成测试
+├── logs/                     # 日志（按周期+模块拆分）
+│   ├── collector/
+│   │   ├── 1m.log
+│   │   └── 1d.log
+│   ├── indicator/
+│   │   ├── 1m.log
+│   │   └── 1h.log
+│   └── strategy/
+│       ├── pin_1m.log
+│       └── trend_1d.log
+├── Makefile                  # 支持按周期构建/运行服务
+├── go.mod
+└── go.sum
